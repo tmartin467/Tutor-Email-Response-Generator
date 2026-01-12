@@ -1,10 +1,10 @@
 # Tutor-Email-Response-Generator
-Email response generator to assist and streamline responses for students who seek one-on-one tutoring at the LRC. Built with the assistance of ChatGPT, this system enables Student Assistants to quickly create accurate messages regarding tutor availability or aid in alternate solutions.
+Email response generator to assist and streamline responses for students who seek one-on-one tutoring at the Learning Resource Center (LRC). Built with the assistance of ChatGPT, this system enables Student Assistants to quickly create accurate messages regarding tutor availability and alternate support options.
 
 ---
 
 ## Description
-A passion project created to increase efficiency and send timely responses in regards to one-on-one tutoring requests for the LRC. This system prevents fewer human errors by generating an appropriate email in relation to the student's request.
+A passion project created to increase efficiency and send timely responses regarding to one-on-one tutoring requests for the LRC. This system reduces human errors by generating an appropriate email in relation to the student's request.
 
 ---
 
