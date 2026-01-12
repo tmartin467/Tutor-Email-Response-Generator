@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>LRC Email Generator</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="email_gen_icon.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="email_gen_icon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+
+    h1 {
+      margin-top: 0;
+      margin-bottom: 4px;
+    }
+
+    .subtitle {
+      font-size: 0.9rem;
+      color: #64748b;
+      margin-bottom: 16px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+      gap: 20px;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+    }
+
+    .card h2 {
+      margin-top: 0;
+      font-size: 1.05rem;
+      margin-bottom: 10px;
+    }
+
+    .row {
+      margin-bottom: 10px;
+    }
+
+    .row-inline {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: #475569;
+    }
+
+    select,
+    input,
+    textarea {
+      width: 100%;
+      padding: 7px 9px;
+      border-radius: 8px;
+      border: 1px solid #cbd5f5;
+      font-size: 0.9rem;
+      background: #f8fafc;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+    }
+
+    select:focus,
+    input:focus,
+    textarea:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25);
+      background: #ffffff;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 160px;
+    }
+
+    .time-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 6px;
+    }
+
+    button {
+      border-radius: 999px;
+      border: none;
+      padding: 8px 14px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-right: 6px;
+      margin-top: 4px;
+      transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.15s;
+    }
+
+    button.primary {
+      background: #2563eb;
+      color: #ffffff;
+      box-shadow: 0 6px 14px rgba(37, 99, 235, 0.4);
+    }
+
+    button.primary:hover {
+      background: #1d4ed8;
+    }
+
+    button.secondary {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+
+    button.secondary:hover {
+      background: #cbd5e1;
+    }
+
+    button:active {
+      transform: translateY(1px);
+      box-shadow: none;
+    }
+
+    #statusMessage {
+      margin-top: 6px;
+      font-size: 0.82rem;
+      color: #b91c1c;
+    }
+
+    #tutorInfo {
+      font-size: 0.85rem;
+    }
+
+    .tutor-name {
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .tutor-section-title {
+      font-weight: 600;
+      margin-top: 8px;
+      margin-bottom: 2px;
+    }
+
+    .tutor-box {
+      background: #f9fafb;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+      padding: 10px;
+      max-height: 260px;
+      overflow: auto;
+    }
+
+    .schedule-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 2px 0;
+      border-bottom: 1px dashed #e5e7eb;
+    }
+
+    .schedule-item:last-child {
+      border-bottom: none;
+    }
+
+    .muted {
+      color: #9ca3af;
+    }
+
+    .small {
+      font-size: 0.78rem;
+      color: #6b7280;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>LRC Email Generator</h1>
+  <div class="subtitle">
+    First, choose a tutor then their supported course requested by the student. Other tutors will drop down below if
+    applicable.
+    Additionally, the Email subject and Email body will automatically generate after filling out as many details as possible and
+    pushing the "Generate Email" button.
+  </div>
+
+  <div class="layout">
+    <!-- LEFT: form + email -->
+    <div class="card">
+      <h2>1. Request &amp; Email Details</h2>
+
+      <div class="row-inline">
+        <div>
+          <label for="templateType">Template type</label>
+          <select id="templateType">
+            <option value="confirm_in_person">Confirmation: In-Person</option>
+            <option value="confirm_online">Confirmation: Online</option>
+            <option value="seek_alt">Seek Alternate Tutor/Time</option>
+            <option value="tutor_booked">Tutor Already Booked</option>
+          </select>
+        </div>
+        <div>
+          <label for="tutorSelect">Tutor</label>
+          <select id="tutorSelect">
+            <option value="">-- Select tutor --</option>
+          </select>
+          <div class="small">
+            Choose a tutor first; Course and Instructor will update automatically.
+          </div>
+        </div>
+      </div>
+
+      <div class="row-inline">
+        <div>
+          <label for="courseSelect">Course</label>
+          <select id="courseSelect">
+            <option value="">-- Select course --</option>
+          </select>
+        </div>
+        <div>
+          <label for="studentName">Student name</label>
+          <input id="studentName" type="text" placeholder="e.g., Jane Doe" />
+        </div>
+      </div>
+
+      <div class="row-inline">
+        <div>
+          <label for="altTutor1">Alternate tutor option 1 (optional)</label>
+          <select id="altTutor1">
+            <option value="">-- Select alternate tutor --</option>
+          </select>
+        </div>
+        <div>
+          <label for="altTutor2">Alternate tutor option 2 (optional)</label>
+          <select id="altTutor2">
+            <option value="">-- Select alternate tutor --</option>
+          </select>
+        </div>
+      </div>
+
+
+      <div class="row-inline">
+        <div>
+          <label for="professorSelect">Instructor</label>
+          <select id="professorSelect">
+            <option value="">-- Select instructor --</option>
+          </select>
+          <div class="small">
+            Filtered by the selected course. If "No Instructor Available", it will automatically account for this.
+          </div>
+        </div>
+        <div>
+          <label for="staffName">Your name</label>
+          <input id="staffName" type="text" placeholder="e.g., John Schwartz" />
+        </div>
+      </div>
+
+      <div class="row-inline">
+        <div>
+          <label for="appointmentDate">Appointment date</label>
+          <input id="appointmentDate" type="date" />
+        </div>
+        <div>
+          <label>Start time</label>
+          <div class="time-group">
+            <select id="startHour"></select>
+            <select id="startMinute"></select>
+            <select id="startAmPm">
+              <option>AM</option>
+              <option>PM</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label>End time</label>
+          <div class="time-group">
+            <select id="endHour"></select>
+            <select id="endMinute"></select>
+            <select id="endAmPm">
+              <option>AM</option>
+              <option>PM</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="row-inline">
+        <div>
+          <label for="location">Location (in-person)</label>
+          <input id="location" type="text" placeholder="Learning Resource Center, 2nd floor Broome Library" />
+        </div>
+        <div>
+          <label for="zoomLink">Zoom link (online)</label>
+          <input id="zoomLink" type="text" placeholder="https://csuci.zoom.us/my/lrczoom" />
+        </div>
+      </div>
+
+      <div class="row">
+        <label for="emailSubject">Email subject</label>
+        <input id="emailSubject" type="text" />
+      </div>
+
+      <div class="row">
+        <label for="emailBody">Email body</label>
+        <textarea id="emailBody" placeholder="Click 'Generate Email' to build the message..."></textarea>
+      </div>
+
+      <div class="row">
+        <button class="primary" id="generateBtn">Generate Email</button>
+        <button class="secondary" id="copyBtn">Copy Email</button>
+        <button class="secondary" id="resetBtn">Clear</button>
+        <div id="statusMessage"></div>
+      </div>
+    </div>
+
+    <!-- RIGHT: tutor info -->
+    <div class="card">
+      <h2>2. Tutor &amp; Course Info</h2>
+      <p class="small">
+        Choose a tutor to see their supported courses and schedule. The Course dropdown
+        will only show classes that tutor can support, and the Instructor list will filter
+        to instructors who teach that course.
+      </p>
+      <div id="tutorInfo" class="tutor-box muted">
+        No tutor selected yet.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===== Global state =====
+    let tutors = [];
+    let currentTutor = null;
+    var courseInstructorMap = {};
+
+    // ===== Element references =====
+    const templateTypeEl = document.getElementById("templateType");
+    const tutorSelectEl = document.getElementById("tutorSelect");
+    const altTutor1El = document.getElementById("altTutor1");
+    const altTutor2El = document.getElementById("altTutor2");
+    const courseSelectEl = document.getElementById("courseSelect");
+    const professorSelectEl = document.getElementById("professorSelect");
+    const studentNameEl = document.getElementById("studentName");
+    const staffNameEl = document.getElementById("staffName");
+    const appointmentDateEl = document.getElementById("appointmentDate");
+    const locationEl = document.getElementById("location");
+    const zoomLinkEl = document.getElementById("zoomLink");
+    const emailSubjectEl = document.getElementById("emailSubject");
+    const emailBodyEl = document.getElementById("emailBody");
+    const tutorInfoEl = document.getElementById("tutorInfo");
+    const statusMessageEl = document.getElementById("statusMessage");
+
+    const startHourEl = document.getElementById("startHour");
+    const startMinuteEl = document.getElementById("startMinute");
+    const startAmPmEl = document.getElementById("startAmPm");
+    const endHourEl = document.getElementById("endHour");
+    const endMinuteEl = document.getElementById("endMinute");
+    const endAmPmEl = document.getElementById("endAmPm");
+
+    const generateBtn = document.getElementById("generateBtn");
+    const copyBtn = document.getElementById("copyBtn");
+    const resetBtn = document.getElementById("resetBtn");
+
+    // ===== Initial setup =====
+    document.addEventListener("DOMContentLoaded", function () {
+      populateTimeDropdowns();
+
+      // Load instructor map
+      console.log("📂 Loading EPE_instructors.json...");
+      fetch("EPE_instructors.json")
+        .then(function (res) {
+          if (!res.ok) throw new Error("HTTP " + res.status + " loading EPE_instructors.json");
+          return res.json();
+        })
+        .then(function (data) {
+          courseInstructorMap = data;
+          console.log("📘 Loaded instructor map:", Object.keys(courseInstructorMap).length, "entries");
+        })
+        .catch(function (err) {
+          console.error("❌ Error loading EPE_instructors.json:", err);
+        });
+
+      // Load tutor data
+      console.log("📂 Loading tutorData_email.json...");
+      fetch("tutorData_email.json")
+        .then(function (res) {
+          if (!res.ok) throw new Error("HTTP " + res.status + " loading tutorData_email.json");
+          return res.json();
+        })
+        .then(function (data) {
+          tutors = data;
+          console.log("✅ Loaded tutors:", tutors.length);
+          statusMessageEl.textContent = "";
+          populateTutorOptions();
+        })
+        .catch(function (err) {
+          console.error("❌ Error loading tutorData_email.json:", err);
+          statusMessageEl.textContent =
+            "Could not load tutorData_email.json. Make sure it is in the same folder as email_generator.html and you're using Live Server.";
+        });
+
+      tutorSelectEl.addEventListener("change", handleTutorChange);
+      courseSelectEl.addEventListener("change", handleCourseChange);
+      generateBtn.addEventListener("click", generateEmail);
+      copyBtn.addEventListener("click", copyEmail);
+      resetBtn.addEventListener("click", resetForm);
+    });
+
+    // ===== Time dropdowns =====
+    function populateTimeDropdowns() {
+      for (var h = 1; h <= 12; h++) {
+        var opt1 = document.createElement("option");
+        opt1.value = String(h);
+        opt1.textContent = String(h);
+        startHourEl.appendChild(opt1);
+
+        var opt2 = document.createElement("option");
+        opt2.value = String(h);
+        opt2.textContent = String(h);
+        endHourEl.appendChild(opt2);
+      }
+      for (var m = 0; m < 60; m++) {
+        var label = m.toString().padStart(2, "0");
+        var m1 = document.createElement("option");
+        m1.value = label;
+        m1.textContent = label;
+        startMinuteEl.appendChild(m1);
+
+        var m2 = document.createElement("option");
+        m2.value = label;
+        m2.textContent = label;
+        endMinuteEl.appendChild(m2);
+      }
+
+      startHourEl.value = "1";
+      startMinuteEl.value = "00";
+      startAmPmEl.value = "PM";
+      endHourEl.value = "1";
+      endMinuteEl.value = "30";
+      endAmPmEl.value = "PM";
+    }
+
+    // ===== Tutor & course dropdowns =====
+    function populateTutorOptions() {
+      tutorSelectEl.innerHTML = '<option value="">-- Select tutor --</option>';
+      var sorted = tutors.slice().sort(function (a, b) {
+        return a.tutor_name.localeCompare(b.tutor_name);
+      });
+
+      sorted.forEach(function (t) {
+        var opt = document.createElement("option");
+        opt.value = t.tutor_name;
+        opt.textContent = t.tutor_name;
+        tutorSelectEl.appendChild(opt);
+      });
+
+      console.log("👥 Tutors loaded into dropdown:", sorted.length);
+    }
+
+    function populateCourseOptionsForCurrentTutor() {
+      courseSelectEl.innerHTML = '<option value="">-- Select course --</option>';
+      professorSelectEl.innerHTML = '<option value="">-- Select instructor --</option>';
+
+      if (!currentTutor) return;
+
+      (currentTutor.supported_courses || []).forEach(function (course) {
+        var opt = document.createElement("option");
+        opt.value = course;
+        opt.textContent = course;
+        courseSelectEl.appendChild(opt);
+      });
+
+      console.log(
+        "📚 Courses for tutor",
+        currentTutor.tutor_name,
+        ":",
+        (currentTutor.supported_courses || []).length
+      );
+    }
+
+    function populateInstructorOptionsForCourse() {
+      professorSelectEl.innerHTML = '<option value="">-- Select instructor --</option>';
+
+      var courseLabel = courseSelectEl.value;
+      if (!courseLabel) return;
+
+      var code = getCourseCodeFromLabel(courseLabel);
+      if (!code) {
+        addUnknownInstructorOption();
+        return;
+      }
+
+      var namesSet = {};
+      Object.keys(courseInstructorMap).forEach(function (key) {
+        var upperKey = key.toUpperCase();
+        if (upperKey.indexOf(code) === 0) {
+          var name = courseInstructorMap[key];
+          namesSet[name] = true;
+        }
+      });
+
+      var names = Object.keys(namesSet).sort();
+
+      if (names.length === 0) {
+        addUnknownInstructorOption();
+        professorSelectEl.value = "NO_INSTRUCTOR";
+      } else {
+        names.forEach(function (name) {
+          var opt = document.createElement("option");
+          opt.value = name;
+          opt.textContent = name;
+          professorSelectEl.appendChild(opt);
+        });
+      }
+
+
+      console.log("👩‍🏫 Instructors for", courseLabel, "=>", names.length, "match(es)");
+    }
+
+    function addUnknownInstructorOption() {
+      var opt = document.createElement("option");
+      opt.value = "NO_INSTRUCTOR";
+      opt.textContent = "No Instructor Available";
+      professorSelectEl.appendChild(opt);
+    }
+
+    function handleTutorChange() {
+      var name = tutorSelectEl.value;
+      currentTutor =
+        tutors.find(function (t) {
+          return t.tutor_name === name;
+        }) || null;
+
+      renderTutorInfo();
+      populateCourseOptionsForCurrentTutor();
+
+      // Clear alternate tutor dropdowns
+      altTutor1El.innerHTML = '<option value="">-- Select alternate tutor --</option>';
+      altTutor2El.innerHTML = '<option value="">-- Select alternate tutor --</option>';
+    }
+
+    function handleCourseChange() {
+      populateInstructorOptionsForCourse();
+      populateAltTutorsForCourse();
+    }
+
+    // ===== Alternate Tutors =====
+
+    function populateAltTutorsForCourse() {
+      // Reset both selects
+      altTutor1El.innerHTML = '<option value="">-- Select alternate tutor --</option>';
+      altTutor2El.innerHTML = '<option value="">-- Select alternate tutor --</option>';
+
+      var courseLabel = courseSelectEl.value;
+      if (!courseLabel || !currentTutor) return;
+
+      // Use the *base* course code (e.g., "MATH 105") for matching
+      var targetCode = getCourseCodeFromLabel(courseLabel);
+      if (!targetCode) return;
+
+      // Find tutors who support the same base course, excluding the primary tutor
+      var candidates = tutors
+        .filter(function (t) {
+          if (t === currentTutor) return false;
+
+          var courseList = t.supported_courses || [];
+          return courseList.some(function (c) {
+            return getCourseCodeFromLabel(c) === targetCode;
+          });
+        })
+        .sort(function (a, b) {
+          return a.tutor_name.localeCompare(b.tutor_name);
+        });
+
+      candidates.forEach(function (t) {
+        var opt1 = document.createElement("option");
+        opt1.value = t.tutor_name;
+        opt1.textContent = t.tutor_name;
+        altTutor1El.appendChild(opt1);
+
+        var opt2 = opt1.cloneNode(true);
+        altTutor2El.appendChild(opt2);
+      });
+
+      console.log(
+        "👥 Alternate tutors for base course",
+        targetCode,
+        ":",
+        candidates.length
+      );
+    }
+
+    // Extracts course code like "BIOL 210" or "MATH 150"
+    function getCourseCodeFromLabel(label) {
+      if (!label) return "";
+      var upper = label.toUpperCase();
+      var match = upper.match(/^([A-Z/& ]*\d+[A-Z]*)/);
+      return match ? match[1].trim() : "";
+    }
+
+    // Gets any tutor by name (for alternates or main)
+    function getTutorByName(name) {
+      if (!name) return null;
+      return tutors.find(t => t.tutor_name === name) || null;
+    }
+
+
+    // ===== Tutor info panel =====
+    function renderTutorInfo() {
+      if (!currentTutor) {
+        tutorInfoEl.classList.add("muted");
+        tutorInfoEl.innerHTML = "No tutor selected yet.";
+        return;
+      }
+      tutorInfoEl.classList.remove("muted");
+
+      var scheduleHtml = (currentTutor.schedule || [])
+        .map(function (s) {
+          return (
+            '<div class="schedule-item">' +
+            "<div>" +
+            s.day +
+            "</div>" +
+            "<div>" +
+            s.time +
+            "</div>" +
+            "</div>"
+          );
+        })
+        .join("");
+
+      var coursesHtml = (currentTutor.supported_courses || [])
+        .map(function (c) {
+          return "<li>" + c + "</li>";
+        })
+        .join("");
+
+      tutorInfoEl.innerHTML =
+        '<div class="tutor-name">' +
+        currentTutor.tutor_name +
+        "</div>" +
+        '<div class="tutor-section-title">Supported courses:</div>' +
+        "<ul>" +
+        coursesHtml +
+        "</ul>" +
+        '<div class="tutor-section-title">Schedule:</div>' +
+        "<div>" +
+        (scheduleHtml || "No schedule listed.") +
+        "</div>";
+    }
+
+    function buildScheduleLines(tutorOverride) {
+      var t = tutorOverride || currentTutor;
+      if (!t || !Array.isArray(t.schedule)) return "";
+      return t.schedule
+        .map(function (s) {
+          return "• " + s.day + ": " + s.time;
+        })
+        .join("\n");
+    }
+
+    // ===== Date/time helpers =====
+    function formatDateStrings() {
+      var raw = appointmentDateEl.value;
+      if (!raw) {
+        return { pretty: "[Date]", short: "[Date]" };
+      }
+      var d = new Date(raw + "T00:00:00");
+      var pretty = d.toLocaleDateString("en-US", {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+      });
+      var short = d.toLocaleDateString("en-US", {
+        month: "numeric",
+        day: "numeric",
+      });
+      return { pretty: pretty, short: short };
+    }
+
+    function formatTime(hourEl, minuteEl, ampmEl) {
+      var h = hourEl.value || "[H]";
+      var m = (minuteEl.value || "00").toString().padStart(2, "0");
+      var ap = ampmEl.value || "AM";
+      return h + ":" + m + " " + ap;
+    }
+
+    // ===== Helper Function for Clearing Instructor if None =====
+
+    function sanitizeInstructor(name) {
+      if (!name) return "";
+      if (name === "NO_INSTRUCTOR") return "";
+      return name; // real professor's name passes through unchanged
+    }
+
+    // ===== Email generation =====
+    function generateEmail() {
+      var templateType = templateTypeEl.value;
+      var studentName = studentNameEl.value || "Student";
+      var staffName = staffNameEl.value || "LRC Student Assistant";
+      var courseFull = courseSelectEl.value || "[Course Name + Number]";
+      var courseShort = courseFull.split(" - ")[0] || courseFull;
+      var professorName = professorSelectEl.value;
+
+      if (!currentTutor) {
+        statusMessageEl.textContent = "Please select a tutor.";
+        tutorSelectEl.focus();
+        return;
+      }
+
+      if (!courseSelectEl.value) {
+        statusMessageEl.textContent = "Please select a course for this tutor.";
+        courseSelectEl.focus();
+        return;
+      }
+
+      if (!professorName || !professorName.trim()) {
+        statusMessageEl.textContent = "Please select an instructor from the dropdown.";
+        professorSelectEl.focus();
+        return;
+      }
+
+      var dateParts = formatDateStrings();
+      var prettyDate = dateParts.pretty;
+      var shortDate = dateParts.short;
+
+      var timeStart = formatTime(startHourEl, startMinuteEl, startAmPmEl);
+      var timeEnd = formatTime(endHourEl, endMinuteEl, endAmPmEl);
+      var timeRange = timeStart + " – " + timeEnd;
+
+      var location =
+        locationEl.value ||
+        "Learning Resource Center, 2nd floor Broome Library";
+      var zoomLink = zoomLinkEl.value || "https://csuci.zoom.us/my/lrczoom";
+
+      var tutorName = currentTutor.tutor_name;
+      var scheduleLines = buildScheduleLines();
+
+      var subject = "";
+      var bodyLines = [];
+
+      statusMessageEl.textContent = "";
+
+      if (templateType === "confirm_in_person") {
+        subject =
+          "LRC Appointment Confirmation for " +
+          courseShort +
+          " on " +
+          shortDate +
+          " with " +
+          tutorName;
+
+        var cleanInstructor = sanitizeInstructor(professorName);
+
+        bodyLines = [
+          "Hi " + studentName + ",",
+          "",
+          "Thank you for requesting an appointment with an LRC Tutor! Here are the details for your upcoming session. You’ll also receive a calendar invite from the LRC with the same information, which you can add to your personal calendar if you wish.",
+          "",
+          "Tutor: " + tutorName,
+          "Student: " + studentName,
+          "Course: " + courseFull + (cleanInstructor ? " - " + cleanInstructor : ""),
+          "Date: " + prettyDate,
+          "Time: " + timeRange,
+          "Modality: In-Person",
+          "Location: " + location,
+          "",
+          "When you arrive, please check in at the LRC Front Desk and let the Host know you’re here to see your tutor. Your appointment is scheduled for 30 minutes, but depending on tutor availability, you may be able to continue working afterward on a drop-in basis.",
+          "",
+          "And remember, the LRC is primarily a drop-in center, so you’re always welcome to visit during open hours, with or without an appointment.",
+          "",
+          "We look forward to supporting you! Please feel free to reply with any questions.",
+          "",
+          "Sincerely,",
+          "",
+          staffName,
+          "LRC Student Assistant",
+        ];
+      } else if (templateType === "confirm_online") {
+        subject =
+          "LRC Appointment Confirmation for " +
+          courseShort +
+          " on " +
+          shortDate +
+          " with " +
+          tutorName;
+
+        bodyLines = [
+          "Hi " + studentName + ",",
+          "",
+          "Thank you for requesting an appointment with an LRC Tutor! Here are the details for your upcoming online session. You’ll also receive a calendar invite from the LRC with the same information, which you can add to your personal calendar if you wish.",
+          "",
+          "Tutor: " + tutorName,
+          "Student: " + studentName,
+          "Course: " + courseFull + (cleanInstructor ? " - " + cleanInstructor : ""),
+          "Date: " + prettyDate,
+          "Time: " + timeRange,
+          "Modality: Online",
+          "Location: Click here to access LRC Zoom Room Link – " + zoomLink,
+          "",
+          "Please log in to the LRC Zoom Room a few minutes early to ensure your audio and video are working. When you join, you’ll be greeted by an online LRC Host, who will help check you in and place you into a private breakout room with your tutor for your session.",
+          "",
+          "Your appointment is scheduled for 30 minutes, but depending on tutor availability, you may be able to continue working afterward on a drop-in basis.",
+          "",
+          "And remember, the LRC is primarily a drop-in center, so you’re always welcome to connect with tutors during open hours, with or without an appointment.",
+          "",
+          "We look forward to supporting you! Please feel free to reply with any questions.",
+          "",
+          "Sincerely,",
+          "",
+          staffName,
+          "LRC Student Assistant",
+        ];
+      } else if (templateType === "seek_alt") {
+        subject =
+          "LRC Appointment Request – Alternate Times for " +
+          courseShort +
+          " Tutoring";
+
+        bodyLines = [
+          "Hi " + studentName + ",",
+          "",
+          "Thank you for your appointment request with the LRC! We’re glad you reached out for support in " +
+          courseFull +
+          (cleanInstructor ? " (" + cleanInstructor + ")" : "") +
+          ".",
+          "",
+          "The time you requested (" +
+          prettyDate +
+          ", " +
+          timeRange +
+          ") unfortunately doesn’t match the available tutoring schedule, but we’d still love to get you connected for help.",
+          "",
+          tutorName +
+          " supports " +
+          courseShort +
+          ", and you’re welcome to meet with them. Here are the current hours we have recorded:",
+          "",
+          scheduleLines || "• [Tutor hours here]"
+        ];
+
+        // Get selected alternate tutors
+        var altTutor1Name = altTutor1El.value;
+        var altTutor2Name = altTutor2El.value;
+
+        var altTutor1 = getTutorByName(altTutor1Name);
+        var altTutor2 = getTutorByName(altTutor2Name);
+
+        // Build alternate tutor sections if any are selected
+        var altLines = [];
+
+        if (altTutor1) {
+          altLines.push(
+            "",
+            altTutor1.tutor_name + "’s Availability:",
+            buildScheduleLines(altTutor1) || "• [Tutor hours here]"
+          );
+        }
+
+        if (altTutor2 && (!altTutor1 || altTutor2.tutor_name !== altTutor1.tutor_name)) {
+          altLines.push(
+            "",
+            altTutor2.tutor_name + "’s Availability:",
+            buildScheduleLines(altTutor2) || "• [Tutor hours here]"
+          );
+        }
+
+        if (altLines.length > 0) {
+          bodyLines = bodyLines.concat([
+            "",
+            "You may also consider meeting with the following tutors who support " +
+            courseShort +
+            ":",
+          ]);
+          bodyLines = bodyLines.concat(altLines);
+        }
+
+        // Closing paragraphs
+        bodyLines = bodyLines.concat([
+          "",
+          "If one of these times works for you, please let us know, and we’ll get your appointment confirmed.",
+          "",
+          "You’re also always welcome to drop in during LRC open hours to meet with a tutor who supports " +
+          courseShort +
+          "—no appointment needed. Drop-in tutoring is a great way to get extra help when your schedule doesn’t line up with available appointment times.",
+          "",
+          "We look forward to supporting you! Please feel free to reply with any questions or to confirm which time works best.",
+          "",
+          "Sincerely,",
+          "",
+          staffName,
+          "LRC Student Assistant",
+        ]);
+      } else if (templateType === "tutor_booked") {
+        subject =
+          "LRC Appointment Request – Alternate Times for " +
+          courseShort +
+          " with " +
+          tutorName;
+
+        bodyLines = [
+          "Hi " + studentName + ",",
+          "",
+          "Thank you for your appointment request with the LRC! We’re glad you reached out for support in " +
+          courseFull +
+          (cleanInstructor ? " (" + cleanInstructor + ")" : "") +
+          ".",
+          "",
+          "The time you requested (" +
+          prettyDate +
+          ", " +
+          timeRange +
+          ") unfortunately overlaps with another student’s appointment, so " +
+          tutorName +
+          " isn’t available then. However, they do have other times open this week, and we’d love to get you scheduled during one of those instead:",
+          "",
+          tutorName + "’s Availability:",
+          scheduleLines || "• [Tutor availability here]"
+        ];
+
+        // NEW: pull selected alternate tutors
+        var altTutor1Name = altTutor1El.value;
+        var altTutor2Name = altTutor2El.value;
+
+        var altTutor1 = getTutorByName(altTutor1Name);
+        var altTutor2 = getTutorByName(altTutor2Name);
+
+        // Build alternate tutor sections if any are selected
+        var altLines = [];
+
+        if (altTutor1) {
+          altLines.push(
+            "",
+            altTutor1.tutor_name + "’s Availability:",
+            buildScheduleLines(altTutor1) || "• [Tutor availability here]"
+          );
+        }
+
+        if (altTutor2 && (!altTutor1 || altTutor2.tutor_name !== altTutor1.tutor_name)) {
+          altLines.push(
+            "",
+            altTutor2.tutor_name + "’s Availability:",
+            buildScheduleLines(altTutor2) || "• [Tutor availability here]"
+          );
+        }
+
+        if (altLines.length > 0) {
+          bodyLines = bodyLines.concat([
+            "",
+            "You may also consider meeting with the following tutors who support " +
+            courseShort +
+            ":",
+          ]);
+          bodyLines = bodyLines.concat(altLines);
+        }
+
+        // Closing paragraphs
+        bodyLines = bodyLines.concat([
+          "",
+          "Please let us know which of these times works best for you, and we’ll confirm your appointment.",
+          "",
+          "You’re also always welcome to drop in during LRC open hours to meet with " +
+          tutorName +
+          " or another tutor who supports " +
+          courseShort +
+          "—no appointment needed. Drop-in tutoring is a great way to get extra help if your schedule doesn’t line up with available appointment times.",
+          "",
+          "We look forward to supporting you! Please feel free to reply with any questions or to confirm your preferred time.",
+          "",
+          "Sincerely,",
+          "",
+          staffName,
+          "LRC Student Assistant",
+        ]);
+      }
+
+      // actually push the generated content into the form
+      emailSubjectEl.value = subject;
+      emailBodyEl.value = bodyLines.join("\n");
+
+    }
+
+    // ===== Copy & reset =====
+    function copyEmail() {
+      var text = emailBodyEl.value;
+      if (!text.trim()) {
+        statusMessageEl.textContent = "There is no email text to copy yet.";
+        return;
+      }
+      navigator.clipboard
+        .writeText(text)
+        .then(function () {
+          statusMessageEl.textContent = "Email body copied to clipboard!";
+        })
+        .catch(function () {
+          statusMessageEl.textContent =
+            "Unable to copy automatically. Please select the text and copy manually.";
+        });
+    }
+
+    function resetForm() {
+      templateTypeEl.value = "confirm_in_person";
+      tutorSelectEl.value = "";
+      courseSelectEl.innerHTML = '<option value="">-- Select course --</option>';
+      professorSelectEl.innerHTML = '<option value="">-- Select instructor --</option>';
+      studentNameEl.value = "";
+      staffNameEl.value = "";
+      appointmentDateEl.value = "";
+      locationEl.value = "";
+      zoomLinkEl.value = "";
+      emailSubjectEl.value = "";
+      emailBodyEl.value = "";
+      startHourEl.value = "1";
+      startMinuteEl.value = "00";
+      startAmPmEl.value = "PM";
+      endHourEl.value = "1";
+      endMinuteEl.value = "30";
+      endAmPmEl.value = "PM";
+      currentTutor = null;
+      renderTutorInfo();
+      statusMessageEl.textContent = "";
+    }
+  </script>
+</body>
+
+</html>
